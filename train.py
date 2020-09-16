@@ -5,6 +5,10 @@ from train_utils import make_label,load_data, build_model
 
 def main(dirname):
     x_train,y_train,x_test,y_test=load_data(dirname)
+    print("x_train_shape----------->")
+    print(x_train.shape)
+    print("y_train_shape")
+    print (y_train.shape)
     num_val_samples=(x_train.shape[0])//5
     model=build_model(y_train.shape[1])
     print('Training stage')
