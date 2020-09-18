@@ -22,7 +22,31 @@ def make_label(text):
     f.close()
 
 
-# 最后返回的应该是一个(15*8, 21*2*3)的np矩阵
+def load_predict_file_data(file_path):
+    video_hands_mid = []
+    # 一个视频一个文件
+    with open(file_path, mode='r') as t:
+        # 一行一帧
+        for line in t:
+            numbers = [float(num) for num in line.split()]
+            if len(numbers) < 1:
+                continue
+            # 最多三只手，不足用-1填充
+            for i in range(len(numbers), 126):
+                numbers.extend([0.000])
+            video_hands_mid.append(numbers[0:126])
+
+    gap_arr = np.zeros(126)
+    # 将帧数补足到120帧，样本均为15帧
+    for i in range(len(video_hands_mid), 15*5):
+        video_hands_mid.append(gap_arr)
+    video_hands_mid = np.array(video_hands_mid)
+    print("video_hands_mid.shape-->")
+    print(video_hands_mid.shape)
+    return video_hands_mid
+
+
+# 最后返回的应该是一个(15*5, 21*2*3)的np矩阵
 # 所有文件的输入都会被规范化为如此的大小，超过切割，不足填充0
 def load_video_file_data(file_path):
     video_hands_mid = []
@@ -40,10 +64,10 @@ def load_video_file_data(file_path):
 
     gap_arr = np.zeros(126)
     # 将帧数补足到120帧，样本均为15帧
-    for i in range(len(video_hands_mid), 15*8):
+    for i in range(len(video_hands_mid), 15*5):
         video_hands_mid.append(gap_arr)
 
-    video_hands_mid = np.array(video_hands_mid[0:15*8])
+    video_hands_mid = np.array(video_hands_mid[0:15*5])
     print("video_hands_mid.shape-->")
     print(video_hands_mid.shape)
     return video_hands_mid
@@ -168,7 +192,7 @@ def build_model(label):
     # model.add(Masking(mask_value=-1, input_shape=(15*10, 21*2*3,)))
     # timestep为10秒，一帧最多三只手21*2*3=126维
     model.add(layers.LSTM(64, return_sequences=True,
-                          input_shape=(15*8, 21*2*3)))
+                          input_shape=(15*5, 21*2*3)))
     model.add(layers.LSTM(32, return_sequences=True))
     model.add(layers.LSTM(32))
 
